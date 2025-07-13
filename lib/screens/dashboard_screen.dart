@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'quiz/department_selection_screen.dart';
 
 class DashboardScreen extends StatefulWidget {
   const DashboardScreen({super.key});
@@ -62,6 +63,64 @@ class _DashboardScreenState extends State<DashboardScreen> {
     }
   }
 
+  Widget _buildDrawer() {
+    return Drawer(
+      child: ListView(
+        padding: EdgeInsets.zero,
+        children: [
+          UserAccountsDrawerHeader(
+            accountName: Text(
+              _user.displayName ?? 'User',
+              style: const TextStyle(
+                fontSize: 18,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+            accountEmail: Text(
+              _user.email ?? 'No email',
+              style: const TextStyle(fontSize: 14),
+            ),
+            currentAccountPicture: CircleAvatar(
+              backgroundColor: Colors.white,
+              child: Text(
+                _user.email?.substring(0, 1).toUpperCase() ?? 'U',
+                style: const TextStyle(fontSize: 40, color: Color(0xFFE53935)),
+              ),
+            ),
+            decoration: const BoxDecoration(
+              color: Color(0xFFE53935),
+            ),
+          ),
+          ListTile(
+            leading: const Icon(Icons.person_outline, color: Colors.black87),
+            title: const Text('My Profile'),
+            onTap: () {
+              Navigator.pop(context);
+              // TODO: Navigate to profile screen
+            },
+          ),
+          ListTile(
+            leading: const Icon(Icons.settings_outlined, color: Colors.black87),
+            title: const Text('Settings'),
+            onTap: () {
+              Navigator.pop(context);
+              // TODO: Navigate to settings screen
+            },
+          ),
+          const Divider(),
+          ListTile(
+            leading: const Icon(Icons.logout, color: Colors.red),
+            title: const Text('Logout', style: TextStyle(color: Colors.red)),
+            onTap: () {
+              Navigator.pop(context);
+              _signOut();
+            },
+          ),
+        ],
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     if (_isLoading) {
@@ -74,12 +133,15 @@ class _DashboardScreenState extends State<DashboardScreen> {
 
     return Scaffold(
       backgroundColor: const Color(0xFFF5F5F5),
+      drawer: _buildDrawer(),
       appBar: AppBar(
         backgroundColor: Colors.white,
         elevation: 0,
-        leading: IconButton(
-          icon: const Icon(Icons.person_outline, color: Colors.black),
-          onPressed: () {},
+        leading: Builder(
+          builder: (context) => IconButton(
+            icon: const Icon(Icons.menu, color: Colors.black),
+            onPressed: () => Scaffold.of(context).openDrawer(),
+          ),
         ),
         title: const Text(
           'BrainSprint',
@@ -93,7 +155,9 @@ class _DashboardScreenState extends State<DashboardScreen> {
         actions: [
           IconButton(
             icon: const Icon(Icons.help_outline, color: Colors.black),
-            onPressed: () {},
+            onPressed: () {
+              // TODO: Show help dialog
+            },
           ),
         ],
       ),
@@ -150,11 +214,21 @@ class _DashboardScreenState extends State<DashboardScreen> {
                 padding: const EdgeInsets.symmetric(horizontal: 24.0),
                 child: Column(
                   children: [
-                    _buildFeatureItem(
-                      icon: Icons.psychology_outlined,
-                      title: 'Adaptive Quizzing',
-                      description: 'Personalized quizzes that adapt to your learning pace.',
-                      color: Colors.blue,
+                    GestureDetector(
+                      onTap: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => const DepartmentSelectionScreen(),
+                          ),
+                        );
+                      },
+                      child: _buildFeatureItem(
+                        icon: Icons.psychology_outlined,
+                        title: 'Adaptive Quizzing',
+                        description: 'Personalized quizzes that adapt to your learning pace.',
+                        color: Colors.blue,
+                      ),
                     ),
                     const SizedBox(height: 20),
                     _buildFeatureItem(

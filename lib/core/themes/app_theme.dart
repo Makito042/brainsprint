@@ -8,10 +8,10 @@ class AppTheme {
   static final ThemeData lightTheme = ThemeData(
     useMaterial3: true,
     colorScheme: ColorScheme.fromSeed(
-      seedColor: const Color(0xFF6C63FF), // Primary purple
+      seedColor: const Color(0xFFE53935), // Primary red
       brightness: Brightness.light,
-      secondary: const Color(0xFF4CAF50), // Green
-      error: const Color(0xFFE53935), // Red
+      secondary: const Color(0xFFE53935), // Red
+      error: const Color(0xFFB71C1C), // Darker red for errors
     ),
     scaffoldBackgroundColor: Colors.white,
     appBarTheme: const AppBarTheme(
