@@ -1,0 +1,40 @@
+# Set the default behavior for all files to LF line endings
+* text=auto eol=lf
+
+# Explicitly set text files to use LF line endings
+*.dart text eol=lf
+*.yaml text eol=lf
+*.yml text eol=lf
+*.json text eol=lf
+*.md text eol=lf
+*.txt text eol=lf
+
+# Explicitly set binary files to prevent any line ending conversion
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.gif binary
+*.ico binary
+*.pdf binary
+*.ttf binary
+*.otf binary
+*.woff binary
+*.woff2 binary
+*.eot binary
+*.mp3 binary
+*.mp4 binary
+*.wav binary
+*.zip binary
+*.gz binary
+*.tar binary
+*.apk binary
+*.ipk binary
+*.dmg binary
+*.exe binary
+*.dll binary
+*.so binary
+*.dylib binary
+*.a binary
+*.o binary
+*.obj binary
+*.lib binary

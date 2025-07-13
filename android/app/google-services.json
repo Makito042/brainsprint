@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "758304835285",
+    "project_id": "brainsprint-bf985",
+    "storage_bucket": "brainsprint-bf985.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:758304835285:android:8356ab99ed0aef4061845c",
+        "android_client_info": {
+          "package_name": "com.example.brainsprint"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDWqC35z49WbNHr4miLB7Cpf5SAEHU66fw"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
