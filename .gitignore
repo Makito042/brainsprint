@@ -12,6 +12,44 @@
 .swiftpm/
 migrate_working_dir/
 
+# API Keys and sensitive data
+*.env
+*.env.*
+!.env.example
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+# Firebase and Google Services
+google-services.json
+GoogleService-Info.plist
+firebase-credentials.json
+
+# Fastlane
+fastlane/report.xml
+fastlane/Preview.html
+fastlane/screenshots
+fastlane/test_output
+
+# VS Code
+.vscode/*
+!.vscode/settings.json
+!.vscode/tasks.json
+!.vscode/launch.json
+!.vscode/extensions.json
+
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+
+# Windows
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+$RECYCLE.BIN/
+
 # IntelliJ related
 *.iml
 *.ipr
@@ -39,7 +77,111 @@ app.*.symbols
 # Obfuscation related
 app.*.map.json
 
-# Android Studio will place build artifacts here
+# Android
 /android/app/debug
 /android/app/profile
 /android/app/release
+/android/app/google-services.json
+/android/app/src/debug/google-services.json
+/android/app/src/*/google-services.json
+
+# iOS
+/ios/Flutter/.last_build_id
+/ios/Flutter/Flutter.podspec
+/ios/Runner/GoogleService-Info.plist
+/ios/Runner/GeneratedPluginRegistrant.*
+/ios/Podfile.lock
+/ios/Pods/
+/ios/.symlinks/
+/ios/Flutter/flutter_export_environment.sh
+
+# Web
+/web/
+
+# Build files
+/build/
+*.apk
+*.aab
+*.ipa
+*.dart.js
+*.js.map
+*.js
+*.part.js
+*/coverage/lcov.info
+
+# Local configuration files
+.dart_tool/
+.packages
+.pub-cache/
+.pub/
+
+# Flutter/Dart/Pub related
+**/doc/api/
+.flutter-plugins
+.flutter-plugins-dependencies
+.pub-cache/
+.pub/
+/build/
+
+# Firebase configuration
+lib/firebase_options.dart
+
+# VS Code
+.vscode/*
+!.vscode/settings.json
+!.vscode/tasks.json
+!.vscode/launch.json
+!.vscode/extensions.json
+
+# IntelliJ
+.idea/
+*.iml
+*.ipr
+*.iws
+.idea_modules/
+.idea/workspace.xml
+.idea/tasks.xml
+.idea/gradle.xml
+.idea/assetWizardSettings.xml
+.idea/dictionaries
+.idea/libraries/
+.idea/caches/
+
+# Android Studio
+.idea/
+.gradle/
+build/
+.navigation/
+*.ipr
+*~
+*.swp
+
+# Fastlane
+fastlane/report.xml
+fastlane/Preview.html
+fastlane/screenshots
+fastlane/test_output
+fastlane/README.md
+fastlane/report/
+fastlane/screenshots/
+fastlane/test_output/
+
+# Flutter/Dart/Pub
+**/doc/api/
+**/ios/Flutter/.last_build_id
+.dart_tool/
+.flutter-plugins
+.flutter-plugins-dependencies
+.pub-cache/
+.pub/
+/build/
+
+# Web
+web/
+
+# VS Code
+.vscode/
+!.vscode/settings.json
+!.vscode/tasks.json
+!.vscode/launch.json
+!.vscode/extensions.json
