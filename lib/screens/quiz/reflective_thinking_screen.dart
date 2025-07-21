@@ -4,7 +4,12 @@ import '../../repositories/quiz_repository.dart';
 import 'quiz_screen.dart';
 
 class ReflectiveThinkingScreen extends StatefulWidget {
-  const ReflectiveThinkingScreen({super.key});
+  final Course course;
+  
+  const ReflectiveThinkingScreen({
+    super.key, 
+    required this.course,
+  });
 
   @override
   State<ReflectiveThinkingScreen> createState() => _ReflectiveThinkingScreenState();
@@ -138,7 +143,10 @@ class _ReflectiveThinkingScreenState extends State<ReflectiveThinkingScreen> {
                       Navigator.push(
                         context,
                         MaterialPageRoute(
-                          builder: (context) => QuizScreen(quiz: quiz),
+                          builder: (context) => QuizScreen(
+                                quiz: quiz,
+                                course: widget.course,
+                              ),
                         ),
                       );
                     },

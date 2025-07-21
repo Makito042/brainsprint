@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:badges/badges.dart' as badges;
 import 'package:brainsprint/core/constants/app_constants.dart';
+import '../notifications/notifications_screen.dart';
 import '../quiz/reflective_thinking_screen.dart';
 
 class DashboardScreen extends StatefulWidget {
@@ -107,11 +109,13 @@ class _HomeTab extends StatelessWidget {
 class _DashboardScreenState extends State<DashboardScreen> {
   int _selectedIndex = 0;
 
+  int _unreadNotifications = 2; // This would come from your notification service
+
   final List<Widget> _screens = [
-    _HomeTab(),
-    Center(child: Text('Quizzes')),
-    Center(child: Text('Analytics')),
-    Center(child: Text('Profile')),
+    const _HomeTab(),
+    const Center(child: Text('Quizzes')),
+    const Center(child: Text('Analytics')),
+    const Center(child: Text('Profile')),
   ];
 
   void _onItemTapped(int index) {
@@ -124,13 +128,89 @@ class _DashboardScreenState extends State<DashboardScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text(AppConstants.appName),
+        title: const Text(
+          AppConstants.appName,
+          style: TextStyle(
+            fontWeight: FontWeight.bold,
+            fontSize: 24,
+            color: Colors.white,
+          ),
+        ),
         actions: [
-          IconButton(
-            icon: const Icon(Icons.notifications_outlined),
-            onPressed: () {
-              // TODO: Navigate to notifications
-            },
+          // Notification Icon with Badge
+          Container(
+            margin: const EdgeInsets.only(right: 16, top: 8, bottom: 8),
+            child: Material(
+              color: Colors.transparent,
+              child: InkWell(
+                borderRadius: BorderRadius.circular(24),
+                onTap: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => const NotificationsScreen(),
+                    ),
+                  ).then((_) {
+                    // Refresh unread count when returning from notifications
+                    setState(() {
+                      _unreadNotifications = 0; // Update from your service
+                    });
+                  });
+                },
+                child: Stack(
+                  clipBehavior: Clip.none,
+                  children: [
+                    // Notification Bell Icon
+                    Container(
+                      padding: const EdgeInsets.all(8),
+                      decoration: BoxDecoration(
+                        color: Colors.white.withOpacity(0.1),
+                        shape: BoxShape.circle,
+                      ),
+                      child: const Icon(
+                        Icons.notifications_none_rounded,
+                        size: 28,
+                        color: Colors.white,
+                      ),
+                    ),
+                    // Unread Notification Badge
+                    if (_unreadNotifications > 0)
+                      Positioned(
+                        right: 0,
+                        top: 0,
+                        child: Container(
+                          padding: const EdgeInsets.all(6),
+                          decoration: const BoxDecoration(
+                            color: Colors.red,
+                            shape: BoxShape.circle,
+                            boxShadow: [
+                              BoxShadow(
+                                color: Colors.black26,
+                                blurRadius: 2,
+                                offset: Offset(0, 2),
+                              ),
+                            ],
+                          ),
+                          constraints: const BoxConstraints(
+                            minWidth: 12,
+                            minHeight: 12,
+                          ),
+                          child: Text(
+                            _unreadNotifications > 9 ? '9+' : _unreadNotifications.toString(),
+                            style: const TextStyle(
+                              color: Colors.white,
+                              fontSize: 10,
+                              fontWeight: FontWeight.bold,
+                              height: 1,
+                            ),
+                            textAlign: TextAlign.center,
+                          ),
+                        ),
+                      ),
+                  ],
+                ),
+              ),
+            ),
           ),
         ],
       ),

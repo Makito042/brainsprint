@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import 'auth/login_screen.dart';
+import '../providers/theme_provider.dart';
 
 class WelcomeScreen extends StatelessWidget {
   const WelcomeScreen({super.key});
@@ -7,7 +9,7 @@ class WelcomeScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.white,
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       body: Column(
         children: [
           // Image at the top (full width)
@@ -24,10 +26,10 @@ class WelcomeScreen extends StatelessWidget {
             child: Column(
               children: [
                 // Welcome to BrainSprint
-                const Text(
+                Text(
                   'Welcome to BrainSprint',
                   style: TextStyle(
-                    color: Colors.black,
+                    color: Theme.of(context).textTheme.headlineMedium?.color ?? Colors.black,
                     fontSize: 28,
                     fontWeight: FontWeight.bold,
                     height: 1.4,
@@ -38,10 +40,10 @@ class WelcomeScreen extends StatelessWidget {
                 const SizedBox(height: 20),
                 
                 // Description text
-                const Text(
+                Text(
                   'Get ready to challenge your mind and boost your cognitive skills with our fun and engaging brain training exercises.',
                   style: TextStyle(
-                    color: Colors.black87,
+                    color: Theme.of(context).textTheme.bodyLarge?.color?.withOpacity(0.9) ?? Colors.black87,
                     fontSize: 16,
                     height: 1.5,
                   ),

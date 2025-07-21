@@ -1,16 +1,21 @@
 import 'package:flutter/material.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import '../../models/quiz_model.dart';
+import '../../repositories/user_repository.dart';
+import 'quiz_list_screen.dart';
 
 class QuizResultScreen extends StatefulWidget {
   final int score;
   final int totalQuestions;
   final Quiz quiz;
+  final Course course;
 
   const QuizResultScreen({
     super.key,
     required this.score,
     required this.totalQuestions,
     required this.quiz,
+    required this.course,
   });
 
   @override
@@ -19,40 +24,98 @@ class QuizResultScreen extends StatefulWidget {
 
 class _QuizResultScreenState extends State<QuizResultScreen> {
   int _currentIndex = 0;
+  final UserRepository _userRepository = UserRepository();
+  bool _hasRecordedQuiz = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _recordQuizAttempt();
+  }
+
+  Future<void> _recordQuizAttempt() async {
+    if (_hasRecordedQuiz) return;
+    
+    try {
+      final userId = _userRepository.currentUserId;
+      if (userId == null) {
+        debugPrint('No authenticated user');
+        return;
+      }
+
+      // Record the quiz attempt in Firestore
+      final userDoc = FirebaseFirestore.instance.collection('users').doc(userId);
+      await userDoc.collection('quiz_attempts').add({
+        'quizId': widget.quiz.id,
+        'quizTitle': widget.quiz.title,
+        'score': widget.score,
+        'totalQuestions': widget.totalQuestions,
+        'percentage': (widget.score / widget.totalQuestions) * 100,
+        'timestamp': FieldValue.serverTimestamp(),
+      });
+
+      // Increment the quiz count
+      await _userRepository.incrementQuizCount();
+      setState(() {
+        _hasRecordedQuiz = true;
+      });
+    } catch (e) {
+      debugPrint('Error recording quiz attempt: $e');
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
     final double percentage = (widget.score / widget.totalQuestions) * 100;
     
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('Quiz Results'),
-        backgroundColor: Colors.white,
-        elevation: 0,
-        iconTheme: const IconThemeData(color: Colors.black),
-      ),
-      body: _buildBody(percentage),
-      bottomNavigationBar: BottomNavigationBar(
-        currentIndex: _currentIndex,
-        onTap: (index) {
-          setState(() {
-            _currentIndex = index;
-          });
-        },
-        items: const [
-          BottomNavigationBarItem(
-            icon: Icon(Icons.analytics_outlined),
-            label: 'Results',
+    return WillPopScope(
+      onWillPop: () async {
+        // Navigate back to the home screen
+        Navigator.of(context).popUntil((route) => route.isFirst);
+        return false;
+      },
+      child: Scaffold(
+        appBar: AppBar(
+          title: const Text('Quiz Results'),
+          backgroundColor: Colors.white,
+          elevation: 0,
+          iconTheme: const IconThemeData(color: Colors.black),
+          leading: IconButton(
+            icon: const Icon(Icons.arrow_back),
+            onPressed: () {
+              // Navigate back to the quiz list screen with the same course
+              Navigator.pushReplacement(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => QuizListScreen(course: widget.course),
+                ),
+              );
+            },
           ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.question_answer_outlined),
-            label: 'Answers',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.leaderboard_outlined),
-            label: 'Leaderboard',
-          ),
-        ],
+        ),
+        body: _buildBody(percentage),
+        bottomNavigationBar: BottomNavigationBar(
+          currentIndex: _currentIndex,
+          onTap: (index) {
+            setState(() {
+              _currentIndex = index;
+            });
+          },
+          items: const [
+            BottomNavigationBarItem(
+              icon: Icon(Icons.analytics_outlined),
+              label: 'Results',
+            ),
+            BottomNavigationBarItem(
+              icon: Icon(Icons.question_answer_outlined),
+              label: 'Answers',
+            ),
+            BottomNavigationBarItem(
+              icon: Icon(Icons.leaderboard_outlined),
+              label: 'Leaderboard',
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -135,13 +198,13 @@ class _QuizResultScreenState extends State<QuizResultScreen> {
             height: 56,
             child: ElevatedButton(
               onPressed: () {
-                // Navigate back to quiz list by popping until we find the ReflectiveThinkingScreen
-                Navigator.of(context).popUntil((route) => route.settings.name == '/reflective-thinking');
-                
-                // If we didn't find the ReflectiveThinkingScreen, just pop to the first route
-                if (!Navigator.of(context).canPop()) {
-                  Navigator.of(context).popUntil((route) => route.isFirst);
-                }
+                // Navigate back to the quiz list screen with the same course
+                Navigator.pushReplacement(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => QuizListScreen(course: widget.course),
+                  ),
+                );
               },
               style: ElevatedButton.styleFrom(
                 backgroundColor: const Color(0xFFE53935),

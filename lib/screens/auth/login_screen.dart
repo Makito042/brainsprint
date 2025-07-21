@@ -73,11 +73,11 @@ class _LoginScreenState extends State<LoginScreen> {
                       Text('A new verification link has been sent to ${user.email}.', 
                         style: const TextStyle(fontSize: 12)),
                       const SizedBox(height: 4),
-                      const Text('Check your spam/junk folder if you don\'t see it.',
-                        style: TextStyle(fontSize: 11, fontStyle: FontStyle.italic)),
+                      Text('Check your spam/junk folder if you don\'t see it.',
+                        style: TextStyle(fontSize: 11, fontStyle: FontStyle.italic, color: Theme.of(context).colorScheme.onSurfaceVariant.withOpacity(0.8))),
                     ],
                   ),
-                  backgroundColor: Colors.orange,
+                  backgroundColor: Theme.of(context).colorScheme.errorContainer,
                   duration: const Duration(seconds: 8),
                   behavior: SnackBarBehavior.floating,
                 ),
@@ -87,10 +87,10 @@ class _LoginScreenState extends State<LoginScreen> {
             debugPrint('Error sending verification email: $e');
             if (mounted) {
               ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(
-                  content: Text('Error sending verification email. Please try again later.'),
-                  backgroundColor: Colors.red,
-                  duration: Duration(seconds: 5),
+                SnackBar(
+                  content: const Text('Error sending verification email. Please try again later.'),
+                  backgroundColor: Theme.of(context).colorScheme.error,
+                  duration: const Duration(seconds: 5),
                 ),
               );
             }
@@ -109,11 +109,11 @@ class _LoginScreenState extends State<LoginScreen> {
         // Show generic error message for all authentication errors
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Text('Incorrect email or password'),
-              backgroundColor: Colors.red,
+            SnackBar(
+              content: const Text('Incorrect email or password'),
+              backgroundColor: Theme.of(context).colorScheme.error,
               behavior: SnackBarBehavior.floating,
-              duration: Duration(seconds: 3),
+              duration: const Duration(seconds: 3),
             ),
           );
         }
@@ -122,9 +122,9 @@ class _LoginScreenState extends State<LoginScreen> {
       debugPrint('Unexpected error during login: $e');
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('An unexpected error occurred. Please try again.'),
-            backgroundColor: Colors.red,
+          SnackBar(
+            content: const Text('An unexpected error occurred. Please try again.'),
+            backgroundColor: Theme.of(context).colorScheme.error,
             behavior: SnackBarBehavior.floating,
           ),
         );
@@ -142,11 +142,11 @@ class _LoginScreenState extends State<LoginScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.white,
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       appBar: AppBar(
-        backgroundColor: Colors.white,
+        backgroundColor: Theme.of(context).scaffoldBackgroundColor,
         elevation: 0,
-        iconTheme: const IconThemeData(color: Colors.black),
+        iconTheme: IconThemeData(color: Theme.of(context).iconTheme.color),
       ),
       body: SafeArea(
         child: SingleChildScrollView(
@@ -164,27 +164,24 @@ class _LoginScreenState extends State<LoginScreen> {
                     fit: BoxFit.cover,
                   ),
                   border: Border.all(
-                    color: const Color(0xFFE53935),
+                    color: Theme.of(context).colorScheme.primary,
                     width: 2.0,
                   ),
                 ),
               ),
               
               // Welcome text
-              const Text(
+              Text(
                 'Welcome Back!',
-                style: TextStyle(
-                  fontSize: 24,
+                style: Theme.of(context).textTheme.headlineMedium?.copyWith(
                   fontWeight: FontWeight.bold,
-                  color: Colors.black87,
                 ),
               ),
               const SizedBox(height: 8),
               Text(
                 'Sign in to continue',
-                style: TextStyle(
-                  fontSize: 16,
-                  color: Colors.grey[600],
+                style: Theme.of(context).textTheme.bodyLarge?.copyWith(
+                  color: Theme.of(context).colorScheme.onSurfaceVariant.withOpacity(0.8),
                 ),
               ),
               const SizedBox(height: 32),
@@ -266,8 +263,8 @@ class _LoginScreenState extends State<LoginScreen> {
                         child: ElevatedButton(
                           onPressed: _isSubmitting ? null : _login,
                           style: ElevatedButton.styleFrom(
-                            backgroundColor: Colors.red[700],
-                            foregroundColor: Colors.white,
+                            backgroundColor: Theme.of(context).colorScheme.primary,
+                            foregroundColor: Theme.of(context).colorScheme.onPrimary,
                             elevation: 3,
                             shape: RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(30),
@@ -275,12 +272,12 @@ class _LoginScreenState extends State<LoginScreen> {
                             padding: const EdgeInsets.symmetric(vertical: 15),
                           ),
                           child: _isSubmitting
-                              ? const SizedBox(
+                              ? SizedBox(
                                   width: 24,
                                   height: 24,
                                   child: CircularProgressIndicator(
                                     strokeWidth: 2,
-                                    valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                                    valueColor: AlwaysStoppedAnimation<Color>(Theme.of(context).colorScheme.onPrimary),
                                   ),
                                 )
                               : const Text(
@@ -302,7 +299,7 @@ class _LoginScreenState extends State<LoginScreen> {
                             child: Text(
                               'OR',
                               style: TextStyle(
-                                color: Colors.grey[600],
+                                color: Theme.of(context).colorScheme.onSurfaceVariant,
                                 fontWeight: FontWeight.bold,
                               ),
                             ),
@@ -323,7 +320,7 @@ class _LoginScreenState extends State<LoginScreen> {
                             child: Text(
                               'Sign Up',
                               style: TextStyle(
-                                color: Colors.red[700],
+                                color: Theme.of(context).colorScheme.primary,
                                 fontWeight: FontWeight.bold,
                               ),
                             ),

@@ -4,10 +4,12 @@ import 'quiz_result_screen.dart';
 
 class QuizScreen extends StatefulWidget {
   final Quiz quiz;
+  final Course course;
 
   const QuizScreen({
     super.key,
     required this.quiz,
+    required this.course,
   });
 
   @override
@@ -47,6 +49,7 @@ class _QuizScreenState extends State<QuizScreen> {
             score: _score,
             totalQuestions: widget.quiz.questions.length,
             quiz: widget.quiz,
+            course: widget.course,
           ),
         ),
       );

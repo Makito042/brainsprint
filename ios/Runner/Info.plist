@@ -45,5 +45,29 @@
 	<true/>
 	<key>UIApplicationSupportsIndirectInputEvents</key>
 	<true/>
+	
+	<!-- Notification Permissions -->
+	<key>NSCalendarsUsageDescription</key>
+	<string>This app needs calendar access to schedule your quiz reminders</string>
+	<key>NSCameraUsageDescription</key>
+	<string>This app needs camera access for profile pictures</string>
+	<key>NSPhotoLibraryUsageDescription</key>
+	<string>This app needs photo library access to save and select images</string>
+	<key>NSLocationWhenInUseUsageDescription</key>
+	<string>This app needs location access for location-based features</string>
+	<key>NSLocationAlwaysAndWhenInUseUsageDescription</key>
+	<string>This app needs location access for location-based features</string>
+	<key>NSLocationAlwaysUsageDescription</key>
+	<string>This app needs location access for location-based features</string>
+	<key>NSMotionUsageDescription</key>
+	<string>This app needs motion access for activity tracking</string>
+	<key>NSAppleMusicUsageDescription</key>
+	<string>This app needs media access for audio features</string>
+	<key>NSSpeechRecognitionUsageDescription</key>
+	<string>This app needs speech recognition for voice commands</string>
+	<key>NSMicrophoneUsageDescription</key>
+	<string>This app needs microphone access for audio features</string>
+	<key>NSPhotoLibraryAddUsageDescription</key>
+	<string>This app needs photo library access to save images</string>
 </dict>
 </plist>

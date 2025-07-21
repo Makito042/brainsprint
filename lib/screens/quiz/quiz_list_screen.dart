@@ -18,7 +18,10 @@ class QuizListScreen extends StatelessWidget {
         title: Text(course.name),
         leading: IconButton(
           icon: const Icon(Icons.arrow_back),
-          onPressed: () => Navigator.pop(context),
+          onPressed: () {
+            // Pop back to CourseSelectionScreen
+            Navigator.of(context).pop();
+          },
         ),
       ),
       body: StreamBuilder<List<Quiz>>(
@@ -101,7 +104,10 @@ class QuizListScreen extends StatelessWidget {
                     Navigator.push(
                       context,
                       MaterialPageRoute(
-                        builder: (context) => QuizScreen(quiz: quiz),
+                        builder: (context) => QuizScreen(
+                          quiz: quiz,
+                          course: course,
+                        ),
                       ),
                     );
                   },

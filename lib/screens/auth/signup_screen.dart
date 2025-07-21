@@ -33,9 +33,9 @@ class _SignupScreenState extends State<SignupScreen> {
       if (_passwordController.text != _confirmPasswordController.text) {
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Text('Passwords do not match'),
-              backgroundColor: Colors.red,
+            SnackBar(
+              content: Text('Passwords do not match', style: TextStyle(color: Theme.of(context).colorScheme.onErrorContainer)),
+              backgroundColor: Theme.of(context).colorScheme.error,
             ),
           );
         }
@@ -71,10 +71,10 @@ class _SignupScreenState extends State<SignupScreen> {
                 children: [
                   const Text('Account created successfully!'),
                   const SizedBox(height: 4),
-                  const Text('Please verify your email address.', style: TextStyle(fontSize: 12)),
+                  Text('Please verify your email address.', style: TextStyle(fontSize: 12, color: Theme.of(context).colorScheme.onSurfaceVariant)),
                 ],
               ),
-              backgroundColor: Colors.green,
+              backgroundColor: Theme.of(context).colorScheme.primaryContainer,
               duration: const Duration(seconds: 5),
             ),
           );
@@ -98,7 +98,7 @@ class _SignupScreenState extends State<SignupScreen> {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
               content: Text(message),
-              backgroundColor: Colors.red,
+              backgroundColor: Theme.of(context).colorScheme.error,
               duration: const Duration(seconds: 5),
             ),
           );
@@ -106,9 +106,9 @@ class _SignupScreenState extends State<SignupScreen> {
       } catch (e) {
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Text('An unexpected error occurred. Please try again.'),
-              backgroundColor: Colors.red,
+            SnackBar(
+              content: Text('An unexpected error occurred. Please try again.', style: TextStyle(color: Theme.of(context).colorScheme.onError)),
+              backgroundColor: Theme.of(context).colorScheme.error,
             ),
           );
         }
@@ -125,11 +125,11 @@ class _SignupScreenState extends State<SignupScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.white,
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       appBar: AppBar(
-        backgroundColor: Colors.white,
+        backgroundColor: Theme.of(context).scaffoldBackgroundColor,
         elevation: 0,
-        iconTheme: const IconThemeData(color: Colors.black),
+        iconTheme: IconThemeData(color: Theme.of(context).iconTheme.color),
       ),
       body: SafeArea(
         child: SingleChildScrollView(
@@ -147,27 +147,24 @@ class _SignupScreenState extends State<SignupScreen> {
                     fit: BoxFit.cover,
                   ),
                   border: Border.all(
-                    color: const Color(0xFFE53935),
+                    color: Theme.of(context).colorScheme.primary,
                     width: 2.0,
                   ),
                 ),
               ),
               
               // Welcome text
-              const Text(
+              Text(
                 'Welcome to BrainSprint',
-                style: TextStyle(
-                  fontSize: 24,
+                style: Theme.of(context).textTheme.headlineMedium?.copyWith(
                   fontWeight: FontWeight.bold,
-                  color: Colors.black87,
                 ),
               ),
               const SizedBox(height: 8),
               Text(
                 'Sign up to continue your learning journey',
-                style: TextStyle(
-                  fontSize: 16,
-                  color: Colors.grey[600],
+                style: Theme.of(context).textTheme.bodyLarge?.copyWith(
+                  color: Theme.of(context).colorScheme.onSurfaceVariant.withOpacity(0.8),
                 ),
               ),
               const SizedBox(height: 32),
@@ -283,19 +280,19 @@ class _SignupScreenState extends State<SignupScreen> {
                         child: ElevatedButton(
                           onPressed: _isLoading ? null : _signup,
                           style: ElevatedButton.styleFrom(
-                            backgroundColor: const Color(0xFFE53935),
-                            foregroundColor: Colors.white,
+                            backgroundColor: Theme.of(context).colorScheme.primary,
+                            foregroundColor: Theme.of(context).colorScheme.onPrimary,
                             shape: RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(30),
                             ),
                           ),
                           child: _isLoading
-                              ? const SizedBox(
+                              ? SizedBox(
                                   width: 24,
                                   height: 24,
                                   child: CircularProgressIndicator(
                                     strokeWidth: 2,
-                                    valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                                    valueColor: AlwaysStoppedAnimation<Color>(Theme.of(context).colorScheme.onPrimary),
                                   ),
                                 )
                               : const Text(
@@ -310,20 +307,20 @@ class _SignupScreenState extends State<SignupScreen> {
                       const SizedBox(height: 24),
                       
                       // Divider with "or"
-                      const Row(
+                      Row(
                         children: [
-                          Expanded(child: Divider()),
+                          const Expanded(child: Divider()),
                           Padding(
-                            padding: EdgeInsets.symmetric(horizontal: 16.0),
+                            padding: const EdgeInsets.symmetric(horizontal: 16.0),
                             child: Text(
                               'OR',
                               style: TextStyle(
-                                color: Colors.grey,
+                                color: Theme.of(context).colorScheme.onSurfaceVariant,
                                 fontWeight: FontWeight.bold,
                               ),
                             ),
                           ),
-                          Expanded(child: Divider()),
+                          const Expanded(child: Divider()),
                         ],
                       ),
                       const SizedBox(height: 24),
@@ -337,10 +334,10 @@ class _SignupScreenState extends State<SignupScreen> {
                             onTap: () {
                               Navigator.pushReplacementNamed(context, '/login');
                             },
-                            child: const Text(
+                            child: Text(
                               'Log In',
                               style: TextStyle(
-                                color: Color(0xFFE53935),
+                                color: Theme.of(context).colorScheme.primary,
                                 fontWeight: FontWeight.bold,
                               ),
                             ),
@@ -353,7 +350,7 @@ class _SignupScreenState extends State<SignupScreen> {
                       Text(
                         'By signing up, you agree to our Terms of Service and Privacy Policy',
                         style: TextStyle(
-                          color: Colors.grey[600],
+                          color: Theme.of(context).colorScheme.onSurfaceVariant.withOpacity(0.7),
                           fontSize: 12,
                         ),
                         textAlign: TextAlign.center,
