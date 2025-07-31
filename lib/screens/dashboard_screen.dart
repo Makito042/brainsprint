@@ -4,6 +4,8 @@ import 'quiz/department_selection_screen.dart';
 import 'notifications/notifications_screen.dart';
 import 'profile/profile_screen.dart';
 import 'settings_screen.dart';
+import 'analytics/analytics_dashboard.dart';
+import 'gamification/gamification_dashboard.dart';
 
 class DashboardScreen extends StatefulWidget {
   const DashboardScreen({super.key});
@@ -123,6 +125,19 @@ class _DashboardScreenState extends State<DashboardScreen> {
                 context,
                 MaterialPageRoute(
                   builder: (context) => const SettingsScreen(),
+                ),
+              );
+            },
+          ),
+          ListTile(
+            leading: Icon(Icons.analytics_outlined, color: Theme.of(context).iconTheme.color),
+            title: Text('Analytics', style: Theme.of(context).textTheme.bodyLarge),
+            onTap: () {
+              Navigator.pop(context);
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => const AnalyticsDashboard(),
                 ),
               );
             },
@@ -291,18 +306,38 @@ class _DashboardScreenState extends State<DashboardScreen> {
                       ),
                     ),
                     const SizedBox(height: 20),
-                    _buildFeatureItem(
-                      icon: Icons.show_chart_outlined,
-                      title: 'Performance Analytics',
-                      description: 'Track your progress and identify areas for improvement.',
-                      color: Colors.orange,
+                    GestureDetector(
+                      onTap: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => const AnalyticsDashboard(),
+                          ),
+                        );
+                      },
+                      child: _buildFeatureItem(
+                        icon: Icons.show_chart_outlined,
+                        title: 'Performance Analytics',
+                        description: 'Track your progress and identify areas for improvement.',
+                        color: Colors.orange,
+                      ),
                     ),
                     const SizedBox(height: 20),
-                    _buildFeatureItem(
-                      icon: Icons.emoji_events_outlined,
-                      title: 'Gamification',
-                      description: 'Earn rewards and compete with friends to stay motivated.',
-                      color: Colors.purple,
+                    GestureDetector(
+                      onTap: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => const GamificationDashboard(),
+                          ),
+                        );
+                      },
+                      child: _buildFeatureItem(
+                        icon: Icons.emoji_events_outlined,
+                        title: 'Gamification',
+                        description: 'Earn rewards and compete with friends to stay motivated.',
+                        color: Colors.purple,
+                      ),
                     ),
                     const SizedBox(height: 40),
                   ],

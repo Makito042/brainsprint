@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:badges/badges.dart' as badges;
 import 'package:brainsprint/core/constants/app_constants.dart';
 import '../notifications/notifications_screen.dart';
 import '../quiz/reflective_thinking_screen.dart';
@@ -12,7 +11,7 @@ class DashboardScreen extends StatefulWidget {
 }
 
 class _HomeTab extends StatelessWidget {
-  const _HomeTab({super.key});
+  const _HomeTab();
 
   @override
   Widget build(BuildContext context) {

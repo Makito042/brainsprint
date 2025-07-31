@@ -7,6 +7,7 @@ class AppUser {
   final String? photoURL;
   final String? phoneNumber;
   final int quizzesTaken;
+  final double highestScore;
 
   AppUser({
     required this.uid,
@@ -15,6 +16,7 @@ class AppUser {
     this.photoURL,
     this.phoneNumber,
     this.quizzesTaken = 0,
+    this.highestScore = 0.0,
   });
 
   factory AppUser.fromFirebaseUser(auth.User user, [Map<String, dynamic>? userData]) {
@@ -25,6 +27,7 @@ class AppUser {
       photoURL: user.photoURL,
       phoneNumber: user.phoneNumber,
       quizzesTaken: userData?['quizzesTaken'] ?? 0,
+      highestScore: (userData?['highestScore'] ?? 0).toDouble(),
     );
   }
 
@@ -37,6 +40,7 @@ class AppUser {
       'photoURL': photoURL,
       'phoneNumber': phoneNumber,
       'quizzesTaken': quizzesTaken,
+      'highestScore': highestScore,
     };
   }
   
@@ -48,6 +52,7 @@ class AppUser {
     String? photoURL,
     String? phoneNumber,
     int? quizzesTaken,
+    double? highestScore,
   }) {
     return AppUser(
       uid: uid ?? this.uid,
@@ -56,6 +61,7 @@ class AppUser {
       photoURL: photoURL ?? this.photoURL,
       phoneNumber: phoneNumber ?? this.phoneNumber,
       quizzesTaken: quizzesTaken ?? this.quizzesTaken,
+      highestScore: highestScore ?? this.highestScore,
     );
   }
 }

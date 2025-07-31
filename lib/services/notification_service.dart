@@ -98,7 +98,7 @@ class NotificationService {
       }
     }
     
-    debugPrint('=== NOTIFICATION SERVICE: Finished scheduling ${notificationId} notifications ===');
+    debugPrint('=== NOTIFICATION SERVICE: Finished scheduling $notificationId notifications ===');
     
     debugPrint('Scheduled $notificationId weekly notifications');
   }
@@ -114,7 +114,7 @@ class NotificationService {
   String _formatTime(TimeOfDay time) {
     final hour = time.hourOfPeriod == 0 ? 12 : time.hourOfPeriod;
     final period = time.period == DayPeriod.am ? 'AM' : 'PM';
-    return '${hour}:${time.minute.toString().padLeft(2, '0')} $period';
+    return '$hour:${time.minute.toString().padLeft(2, '0')} $period';
   }
 
   Future<NotificationDetails> _getNotificationDetails() async {

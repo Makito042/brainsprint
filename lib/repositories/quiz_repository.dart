@@ -229,6 +229,66 @@ class QuizRepository {
     }
   }
 
+  /// Search for quizzes by title or description
+  /// [query] is the search term to match against quiz titles and descriptions
+  /// Returns a list of matching quizzes with duplicates removed by ID
+  Stream<List<Quiz>> searchQuizzes(String query) {
+    // Search across all departments and courses
+    return _firestore
+        .collectionGroup('quizzes')
+        .snapshots()
+        .map((snapshot) {
+          // Use a map to store quizzes by ID to remove duplicates
+          final quizzesMap = <String, Quiz>{};
+          
+          for (final doc in snapshot.docs) {
+            try {
+              final data = doc.data();
+              
+              // If there's a search query, filter the results
+              if (query.isNotEmpty) {
+                final searchLower = query.toLowerCase();
+                final title = (data['title'] ?? '').toString().toLowerCase();
+                final description = (data['description'] ?? '').toString().toLowerCase();
+                
+                // Skip if no match
+                if (!title.contains(searchLower) && !description.contains(searchLower)) {
+                  continue;
+                }
+              }
+              
+              // Only add if we haven't seen this quiz ID before
+              if (!quizzesMap.containsKey(doc.id)) {
+                // Parse questions from the data
+                final questionsData = List<Map<String, dynamic>>.from(data['questions'] ?? []);
+                final questions = questionsData
+                    .map((q) => QuizQuestion.fromJson(Map<String, dynamic>.from(q)))
+                    .toList();
+                
+                final quiz = Quiz(
+                  id: doc.id,
+                  title: data['title']?.toString() ?? 'Untitled Quiz',
+                  description: data['description']?.toString() ?? 'No description',
+                  questions: questions,
+                );
+                
+                quizzesMap[doc.id] = quiz;
+                debugPrint('Adding quiz: ${quiz.title} (${quiz.id})');
+              }
+            } catch (e) {
+              debugPrint('Error parsing quiz ${doc.id}: $e');
+            }
+          }
+          
+          final uniqueQuizzes = quizzesMap.values.toList();
+          debugPrint('Returning ${uniqueQuizzes.length} unique quizzes');
+          return uniqueQuizzes;
+        }).handleError((error) {
+          debugPrint('Error searching quizzes: $error');
+          return [];
+        });
+  }
+
   // Get a specific quiz by ID
   Future<Quiz?> getQuiz(String quizId) async {
     try {

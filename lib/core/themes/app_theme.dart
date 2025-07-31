@@ -7,11 +7,18 @@ class AppTheme {
   // Light Theme
   static final ThemeData lightTheme = ThemeData(
     useMaterial3: true,
-    colorScheme: ColorScheme.fromSeed(
-      seedColor: const Color(0xFFE53935), // Primary red
+    colorScheme: ColorScheme.light(
+      primary: const Color(0xFFD32F2F), // Vibrant red
+      primaryContainer: const Color(0xFFFFCDD2), // Light red
+      secondary: const Color(0xFFEF5350), // Slightly lighter red for secondary elements
+      secondaryContainer: const Color(0xFFFFEBEE), // Very light red
+      surface: Colors.white,
+      error: const Color(0xFFC62828), // Darker red for errors
+      onPrimary: Colors.white,
+      onSecondary: Colors.white,
+      onSurface: Colors.black87,
+      onError: Colors.white,
       brightness: Brightness.light,
-      secondary: const Color(0xFFE53935), // Red
-      error: const Color(0xFFB71C1C), // Darker red for errors
     ),
     scaffoldBackgroundColor: Colors.white,
     appBarTheme: const AppBarTheme(
@@ -60,11 +67,18 @@ class AppTheme {
   // Dark Theme
   static final ThemeData darkTheme = ThemeData(
     useMaterial3: true,
-    colorScheme: ColorScheme.fromSeed(
-      seedColor: const Color(0xFF7C4DFF), // Lighter purple for dark theme
+    colorScheme: ColorScheme.dark(
+      primary: const Color(0xFFFF5252), // Brighter red for dark theme
+      primaryContainer: const Color(0xFFB71C1C), // Darker red
+      secondary: const Color(0xFFFF8A80), // Coral red for secondary elements
+      secondaryContainer: const Color(0xFF4A1C1C), // Dark red container
+      surface: const Color(0xFF121212),
+      error: const Color(0xFFCF6679), // Softer red for errors in dark mode
+      onPrimary: Colors.black87,
+      onSecondary: Colors.black87,
+      onSurface: Colors.white,
+      onError: Colors.black87,
       brightness: Brightness.dark,
-      secondary: const Color(0xFF69F0AE), // Lighter green
-      error: const Color(0xFFFF6E6E), // Lighter red
     ),
     scaffoldBackgroundColor: const Color(0xFF121212),
     appBarTheme: const AppBarTheme(

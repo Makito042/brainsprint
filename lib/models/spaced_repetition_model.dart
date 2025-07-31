@@ -1,4 +1,3 @@
-import 'package:cloud_firestore/cloud_firestore.dart';
 
 class ReviewTime {
   final int hour;
@@ -79,14 +78,16 @@ class SpacedRepetitionPreferences {
   }
 
   factory SpacedRepetitionPreferences.fromMap(Map<String, dynamic>? map) {
-    if (map == null) return SpacedRepetitionPreferences(
+    if (map == null) {
+      return SpacedRepetitionPreferences(
       reviewSlots: [],
       nextReviewDates: {},
       masteryLevels: {},
     );
+    }
 
     return SpacedRepetitionPreferences(
-      reviewSlots: (map['reviewSlots'] as List<dynamic>?)?.map((slot) => ReviewSlot.fromMap(slot))?.toList() ?? [],
+      reviewSlots: (map['reviewSlots'] as List<dynamic>?)?.map((slot) => ReviewSlot.fromMap(slot)).toList() ?? [],
       nextReviewDates: (map['nextReviewDates'] as Map<String, dynamic>?)?.map((key, value) => MapEntry(key, DateTime.parse(value))) ?? {},
       masteryLevels: (map['masteryLevels'] as Map<String, dynamic>?)?.map((key, value) => MapEntry(key, value as int)) ?? {},
     );

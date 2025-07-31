@@ -11,7 +11,11 @@ import 'screens/auth/signup_screen.dart';
 import 'screens/dashboard_screen.dart';
 import 'screens/spaced_repetition_screen.dart';
 import 'services/notification_service.dart';
+import 'services/gamification_service.dart';
+import 'repositories/gamification/gamification_repository.dart';
+import 'repositories/quiz_repository.dart';
 import 'providers/theme_provider.dart';
+import 'providers/gamification_provider.dart';
 import 'core/themes/app_theme.dart';
 
 Future<void> main() async {
@@ -27,16 +31,33 @@ Future<void> main() async {
   await notificationService.initialize();
   await notificationService.requestNotificationPermission();
   
-  // Set preferred orientations
+  // Set preferred orientations to allow both portrait and landscape
   await SystemChrome.setPreferredOrientations([
     DeviceOrientation.portraitUp,
     DeviceOrientation.portraitDown,
+    DeviceOrientation.landscapeLeft,
+    DeviceOrientation.landscapeRight,
   ]);
   
   final prefs = await SharedPreferences.getInstance();
   runApp(
-    ChangeNotifierProvider(
-      create: (_) => ThemeProvider(prefs),
+    MultiProvider(
+      providers: [
+        ChangeNotifierProvider(create: (_) => ThemeProvider(prefs)),
+        Provider<GamificationRepository>(
+          create: (_) => GamificationRepository(),
+        ),
+        ProxyProvider<GamificationRepository, GamificationService>(
+          update: (_, repo, __) => GamificationService(repository: repo),
+        ),
+        ChangeNotifierProxyProvider<GamificationService, GamificationProvider>(
+          create: (_) => GamificationProvider(),
+          update: (_, service, provider) => provider!..updateService(service),
+        ),
+        Provider<QuizRepository>(
+          create: (_) => QuizRepository(),
+        ),
+      ],
       child: const BrainSprintApp(),
     ),
   );

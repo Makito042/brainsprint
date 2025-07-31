@@ -25,16 +25,16 @@ class QuizResultScreen extends StatefulWidget {
 class _QuizResultScreenState extends State<QuizResultScreen> {
   int _currentIndex = 0;
   final UserRepository _userRepository = UserRepository();
-  bool _hasRecordedQuiz = false;
+  bool _hasRecordedScore = false;
 
   @override
   void initState() {
     super.initState();
-    _recordQuizAttempt();
+    _updateUserScore();
   }
 
-  Future<void> _recordQuizAttempt() async {
-    if (_hasRecordedQuiz) return;
+  Future<void> _updateUserScore() async {
+    if (_hasRecordedScore) return;
     
     try {
       final userId = _userRepository.currentUserId;
@@ -42,22 +42,64 @@ class _QuizResultScreenState extends State<QuizResultScreen> {
         debugPrint('No authenticated user');
         return;
       }
+      
+      final percentage = (widget.score / widget.totalQuestions) * 100;
+      
+      // Update user's highest score if needed
+      final userDoc = await FirebaseFirestore.instance
+          .collection('users')
+          .doc(userId)
+          .get();
+          
+      if (userDoc.exists) {
+        final currentHighScore = (userDoc.data()?['highestScore'] as num?)?.toDouble() ?? 0.0;
+        if (percentage > currentHighScore) {
+          await userDoc.reference.update({
+            'highestScore': percentage,
+          });
+        }
+      }
 
-      // Record the quiz attempt in Firestore
-      final userDoc = FirebaseFirestore.instance.collection('users').doc(userId);
-      await userDoc.collection('quiz_attempts').add({
+      // Save quiz attempt to Firestore
+      debugPrint('🔄 Saving quiz attempt to Firestore...');
+      debugPrint('📝 Course ID: ${widget.course.id}, Quiz ID: ${widget.quiz.id}, Score: ${widget.score}');
+      
+      final attemptData = {
+        'userId': userId,
+        'courseId': widget.course.id,
+        'courseName': widget.course.name,
         'quizId': widget.quiz.id,
-        'quizTitle': widget.quiz.title,
+        'quizName': widget.quiz.title,
         'score': widget.score,
         'totalQuestions': widget.totalQuestions,
-        'percentage': (widget.score / widget.totalQuestions) * 100,
+        'percentage': percentage,
         'timestamp': FieldValue.serverTimestamp(),
-      });
+      };
+      
+      debugPrint('Attempt data: $attemptData');
+      
+      try {
+        final docRef = await FirebaseFirestore.instance.collection('quiz_attempts').add(attemptData);
+        debugPrint('✅ Quiz attempt saved with ID: ${docRef.id}');
+        debugPrint('📄 Document data: $attemptData');
+        
+        // Verify the document was saved
+        final doc = await docRef.get();
+        if (doc.exists) {
+          debugPrint('🔍 Successfully retrieved saved attempt: ${doc.data()}');
+        } else {
+          debugPrint('❌ Failed to retrieve saved attempt');
+        }
+      } catch (error) {
+        debugPrint('❌ Error saving quiz attempt: $error');
+        rethrow; // Re-throw to be caught by the outer catch block
+      }
 
       // Increment the quiz count
       await _userRepository.incrementQuizCount();
+      
       setState(() {
-        _hasRecordedQuiz = true;
+        _hasRecordedScore = true;
       });
     } catch (e) {
       debugPrint('Error recording quiz attempt: $e');

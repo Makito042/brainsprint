@@ -1,11 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
 import 'package:firebase_auth/firebase_auth.dart' as auth;
-import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import '../models/spaced_repetition_model.dart';
 import '../repositories/spaced_repetition_repository.dart';
 import '../services/notification_service.dart';
-import 'package:provider/provider.dart';
 
 class SpacedRepetitionScreen extends StatefulWidget {
   const SpacedRepetitionScreen({super.key});
@@ -145,27 +142,30 @@ class _SpacedRepetitionScreenState extends State<SpacedRepetitionScreen> {
           : ListView(
               padding: const EdgeInsets.all(16),
               children: [
-                const Text(
-                  'Review Schedule',
-                  style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
-                ),
-                const SizedBox(height: 16),
-                ..._reviewSlots.map((slot) => Card(
-                  margin: const EdgeInsets.only(bottom: 8),
-                  child: ListTile(
-                    title: Text('${slot.dayName} at ${slot.time.hour}:${slot.time.minute.toString().padLeft(2, '0')}'),
-                    trailing: IconButton(
-                      icon: const Icon(Icons.delete),
-                      onPressed: () => _removeReviewSlot(_reviewSlots.indexOf(slot)),
-                    ),
+                ExpansionTile(
+                  title: const Text(
+                    'Review Schedule',
+                    style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
                   ),
-                )),
-                const SizedBox(height: 16),
-                const Text(
-                  'Add New Review Slot',
-                  style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
-                ),
-                const SizedBox(height: 16),
+                  initiallyExpanded: true,
+                  children: [
+                    const SizedBox(height: 16),
+                    ..._reviewSlots.map((slot) => Card(
+                      margin: const EdgeInsets.only(bottom: 8),
+                      child: ListTile(
+                        title: Text('${slot.dayName} at ${slot.time.hour}:${slot.time.minute.toString().padLeft(2, '0')}'),
+                        trailing: IconButton(
+                          icon: const Icon(Icons.delete),
+                          onPressed: () => _removeReviewSlot(_reviewSlots.indexOf(slot)),
+                        ),
+                      ),
+                    )),
+                    const SizedBox(height: 16),
+                    const Text(
+                      'Add New Review Slot',
+                      style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                    ),
+                    const SizedBox(height: 16),
                 Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
@@ -239,7 +239,9 @@ class _SpacedRepetitionScreenState extends State<SpacedRepetitionScreen> {
                   onPressed: _addReviewSlot,
                   child: const Text('Add Review Slot'),
                 ),
-                const SizedBox(height: 16),
+                  ],
+                ),
+                const SizedBox(height: 24),
                 ElevatedButton(
                   onPressed: _savePreferences,
                   style: ElevatedButton.styleFrom(

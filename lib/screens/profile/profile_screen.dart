@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart' as auth;
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'quiz_history_screen.dart';
 import '../../models/user_model.dart';
 import '../../repositories/user_repository.dart';
 import '../auth/login_screen.dart';
@@ -14,290 +15,255 @@ class ProfileScreen extends StatefulWidget {
 
 class _ProfileScreenState extends State<ProfileScreen> {
   final UserRepository _userRepository = UserRepository();
-  late Stream<AppUser> _userStream;
-  int _quizzesTaken = 0;
-  double _highestPercentage = 0.0;
-  bool _isLoading = true;
+  late final Stream<AppUser> _userStream;
+  final _auth = auth.FirebaseAuth.instance;
 
   @override
   void initState() {
     super.initState();
-    _userStream = _userRepository.userStream();
-    _loadUserStats();
-  }
-
-  Future<void> _loadUserStats() async {
-    try {
-      final user = await _userRepository.getCurrentUser();
-      setState(() {
-        _quizzesTaken = user.quizzesTaken;
-        _isLoading = false;
-      });
-    } catch (e) {
-      debugPrint('Error loading user stats: $e');
-      setState(() => _isLoading = false);
-    }
+    _userStream = _userRepository.getUserStream();
   }
 
   Future<void> _signOut() async {
     try {
-      await auth.FirebaseAuth.instance.signOut();
+      await _auth.signOut();
       if (!mounted) return;
-      // Navigate to login screen and remove all previous routes
+      
       Navigator.of(context).pushAndRemoveUntil(
         MaterialPageRoute(builder: (context) => const LoginScreen()),
         (route) => false,
       );
     } catch (e) {
       if (!mounted) return;
+      
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Error signing out: ${e.toString()}')),
+        const SnackBar(content: Text('Error signing out')),
       );
     }
   }
 
   @override
   Widget build(BuildContext context) {
-    final user = auth.FirebaseAuth.instance.currentUser;
-    
-    if (user == null) {
-      return const Scaffold(
-        body: Center(
-          child: Text('No user is currently logged in'),
-        ),
-      );
-    }
+    final user = _auth.currentUser;
+    if (user == null) return _buildNoUserScreen();
 
     final theme = Theme.of(context);
-    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final isDark = theme.brightness == Brightness.dark;
     
-    return StreamBuilder<AppUser>(
-      stream: _userStream,
-      builder: (context, snapshot) {
-        final appUser = snapshot.data ?? AppUser.fromFirebaseUser(user);
-
     return Scaffold(
-      backgroundColor: isDark ? Colors.grey[900] : Colors.grey[100],
-      body: SafeArea(
-        child: SingleChildScrollView(
-          child: Column(
-            children: [
-              // Header with back button and profile info
-              Stack(
-                children: [
-                  Container(
-                    width: double.infinity,
-                    padding: const EdgeInsets.all(24),
-                    margin: const EdgeInsets.only(bottom: 20),
-                decoration: BoxDecoration(
-                  color: Colors.red[700],
-                  gradient: LinearGradient(
-                    begin: Alignment.topLeft,
-                    end: Alignment.bottomRight,
-                    colors: [
-                      Colors.red[700]!,
-                      Colors.red[800]!,
-                    ],
+      appBar: AppBar(
+        title: const Text('Profile'),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.settings),
+            onPressed: () {},
+          ),
+        ],
+      ),
+      body: StreamBuilder<AppUser>(
+        stream: _userStream,
+        builder: (context, snapshot) {
+          if (snapshot.connectionState == ConnectionState.waiting) {
+            return const Center(child: CircularProgressIndicator());
+          }
+
+          final appUser = snapshot.data ?? AppUser.fromFirebaseUser(user);
+          
+          return SingleChildScrollView(
+            padding: const EdgeInsets.all(16),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: [
+                const SizedBox(height: 16),
+                // Profile Picture
+                CircleAvatar(
+                  radius: 60,
+                  backgroundColor: theme.primaryColor.withOpacity(0.2),
+                  child: CircleAvatar(
+                    radius: 56,
+                    backgroundImage: appUser.photoURL != null 
+                        ? NetworkImage(appUser.photoURL!) 
+                        : null,
+                    child: appUser.photoURL == null
+                        ? const Icon(Icons.person, size: 50, color: Colors.white)
+                        : null,
                   ),
-                  borderRadius: const BorderRadius.only(
-                    bottomLeft: Radius.circular(30),
-                    bottomRight: Radius.circular(30),
-                  ),
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.black.withOpacity(0.2),
-                      blurRadius: 15,
-                      offset: const Offset(0, 5),
-                    ),
-                  ],
                 ),
-                child: Column(
-                  children: [
-                    // Profile picture
-                    Container(
-                      width: 100,
-                      height: 100,
-                      decoration: BoxDecoration(
-                        shape: BoxShape.circle,
-                        border: Border.all(color: Colors.white, width: 3),
-                      ),
-                      child: ClipOval(
-                        child: appUser.photoURL != null
-                            ? Image.network(
-                                appUser.photoURL!,
-                                fit: BoxFit.cover,
-                                errorBuilder: (context, error, stackTrace) => 
-                                    const Icon(Icons.person, size: 50, color: Colors.white),
-                              )
-                            : const Icon(Icons.person, size: 50, color: Colors.white),
-                      ),
-                    ),
-                    const SizedBox(height: 16),
-                    Text(
-                      appUser.displayName ?? 'User Name',
-                      style: const TextStyle(
-                        color: Colors.white,
-                        fontSize: 24,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                    const SizedBox(height: 4),
-                    Text(
-                      appUser.email ?? 'user@example.com',
-                      style: const TextStyle(
-                        color: Colors.white70,
-                        fontSize: 16,
-                      ),
-                    ),
-                    ],
+                
+                const SizedBox(height: 16),
+                
+                // User Name
+                Text(
+                  appUser.displayName ?? 'User Name',
+                  style: theme.textTheme.headlineSmall?.copyWith(
+                    fontWeight: FontWeight.bold,
                   ),
+                ),
+                
+                const SizedBox(height: 4),
+                
+                // Email
+                Text(
+                  appUser.email ?? 'user@example.com',
+                  style: theme.textTheme.bodyMedium?.copyWith(
+                    color: Colors.grey[600],
                   ),
-                  // Back button
-                  Positioned(
-                    top: 16,
-                    left: 16,
-                    child: InkWell(
-                      onTap: () => Navigator.of(context).pop(),
-                      borderRadius: BorderRadius.circular(20),
-                      child: Container(
-                        padding: const EdgeInsets.all(8),
-                        decoration: BoxDecoration(
-                          color: Colors.white.withOpacity(0.2),
-                          shape: BoxShape.circle,
-                        ),
-                        child: const Icon(
-                          Icons.arrow_back,
-                          color: Colors.white,
-                          size: 24,
+                ),
+                
+                const SizedBox(height: 32),
+                
+                // Stats Cards
+                ConstrainedBox(
+                  constraints: const BoxConstraints(
+                    maxWidth: 500, // Prevent cards from becoming too wide on large screens
+                  ),
+                  child: Row(
+                    crossAxisAlignment: CrossAxisAlignment.start, // Align items to the top
+                    children: [
+                      Expanded(
+                        child: Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 4), // Add some horizontal padding
+                          child: _StatCard(
+                            title: 'Highest Score',
+                            value: '${appUser.highestScore.toStringAsFixed(0)}%',
+                            icon: FontAwesomeIcons.trophy,
+                            color: Colors.amber,
+                          ),
                         ),
                       ),
-                    ),
+                      const SizedBox(width: 8), // Reduce spacing between cards
+                      Expanded(
+                        child: Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 4), // Add some horizontal padding
+                          child: GestureDetector(
+                            behavior: HitTestBehavior.opaque, // Make the entire area tappable
+                            onTap: () {
+                              Navigator.of(context).push(
+                                MaterialPageRoute(
+                                  builder: (context) => const QuizHistoryScreen(),
+                                ),
+                              );
+                            },
+                            child: _StatCard(
+                              title: 'Quizzes Taken',
+                              value: '${appUser.quizzesTaken}',
+                              icon: FontAwesomeIcons.clipboardCheck,
+                              color: Colors.blue,
+                            ),
+                          ),
+                        ),
+                      ),
+                    ],
                   ),
-                ],
-              ),
-              
-              // Stats cards
-              if (_isLoading)
-                const Padding(
-                  padding: EdgeInsets.symmetric(vertical: 40.0),
-                  child: CircularProgressIndicator(),
-                )
-              else
-                _buildStatsCards(theme),
-              
-              // Sign out button
-              Container(
-                margin: const EdgeInsets.all(24),
-                width: double.infinity,
-                child: ElevatedButton.icon(
-                  onPressed: _signOut,
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.red[50],
-                    foregroundColor: Colors.red,
-                    padding: const EdgeInsets.symmetric(vertical: 16),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(15),
-                    ),
-                    elevation: 0,
-                  ),
-                  icon: const Icon(Icons.logout, size: 20),
-                  label: const Text('Sign Out'),
                 ),
+                
+                const SizedBox(height: 24),
+                
+                // Sign Out Button
+                SizedBox(
+                  width: double.infinity,
+                  child: ElevatedButton.icon(
+                    onPressed: _signOut,
+                    style: ElevatedButton.styleFrom(
+                      padding: const EdgeInsets.symmetric(vertical: 16),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                    ),
+                    icon: const Icon(Icons.logout),
+                    label: const Text('Sign Out'),
+                  ),
+                ),
+              ],
+            ),
+          );
+        },
+      ),
+    );
+  }
+  
+  Widget _buildNoUserScreen() {
+    return Scaffold(
+      appBar: AppBar(title: const Text('Profile')),
+      body: Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            const Icon(Icons.error_outline, size: 48, color: Colors.red),
+            const SizedBox(height: 16),
+            const Text('No user is currently logged in'),
+            const SizedBox(height: 24),
+            ElevatedButton(
+              onPressed: () => Navigator.of(context).pushReplacementNamed('/login'),
+              child: const Text('Go to Login'),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _StatCard extends StatelessWidget {
+  final String title;
+  final String value;
+  final IconData icon;
+  final Color color;
+
+  const _StatCard({
+    required this.title,
+    required this.value,
+    required this.icon,
+    required this.color,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        return Container(
+          padding: const EdgeInsets.all(16),
+          decoration: BoxDecoration(
+            color: Theme.of(context).cardColor,
+            borderRadius: BorderRadius.circular(12),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withOpacity(0.05),
+                blurRadius: 8,
+                offset: const Offset(0, 2),
               ),
             ],
           ),
-        ),
-      ),
-    );
-      },
-    );
-  }
-  
-  // Build stats cards
-  Widget _buildStatsCards(ThemeData theme) {
-    return Container(
-      margin: const EdgeInsets.symmetric(horizontal: 24, vertical: 32),
-      child: Column(
-        children: [
-          // Quizzes taken card
-          _buildStatCard(
-            title: 'Quizzes Taken',
-            value: _quizzesTaken.toString(),
-            icon: Icons.quiz_outlined,
-          ),
-          
-          const SizedBox(height: 16),
-          
-          // Highest score card
-          _buildStatCard(
-            title: 'Highest Score',
-            value: '${_highestPercentage.toStringAsFixed(0)}%',
-            icon: Icons.emoji_events_outlined,
-          ),
-        ],
-      ),
-    );
-  }
-  
-  // Build a single stat card
-  Widget _buildStatCard({
-    required String title,
-    required String value,
-    required IconData icon,
-  }) {
-    return Container(
-      width: double.infinity,
-      padding: const EdgeInsets.all(20),
-      decoration: BoxDecoration(
-        color: Theme.of(context).brightness == Brightness.dark
-            ? Colors.grey[850]
-            : Colors.white,
-        borderRadius: BorderRadius.circular(16),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.05),
-            blurRadius: 10,
-            offset: const Offset(0, 4),
-          ),
-        ],
-      ),
-      child: Row(
-        children: [
-          Container(
-            padding: const EdgeInsets.all(12),
-            decoration: BoxDecoration(
-              color: Theme.of(context).primaryColor.withOpacity(0.1),
-              borderRadius: BorderRadius.circular(12),
-            ),
-            child: Icon(
-              icon,
-              color: Theme.of(context).primaryColor,
-              size: 28,
-            ),
-          ),
-          const SizedBox(width: 16),
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
             children: [
+              Icon(icon, color: color, size: 24),
+              const SizedBox(height: 8),
               Text(
                 value,
                 style: const TextStyle(
-                  fontSize: 24,
+                  fontSize: 20,
                   fontWeight: FontWeight.bold,
                 ),
+                textAlign: TextAlign.center,
+                overflow: TextOverflow.ellipsis,
+                maxLines: 1,
               ),
               const SizedBox(height: 4),
               Text(
                 title,
                 style: TextStyle(
-                  fontSize: 16,
+                  fontSize: 12,
                   color: Colors.grey[600],
                 ),
+                textAlign: TextAlign.center,
+                overflow: TextOverflow.ellipsis,
+                maxLines: 1,
               ),
             ],
           ),
-        ],
-      ),
+        );
+      },
     );
   }
 }
