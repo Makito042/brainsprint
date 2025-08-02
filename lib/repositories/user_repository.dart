@@ -41,14 +41,42 @@ class UserRepository {
 
       final doc = await _userDocRef.get();
       if (!doc.exists) {
-        // Create user document if it doesn't exist
-        final newUser = AppUser.fromFirebaseUser(user, {'quizzesTaken': 0});
-        await _userDocRef.set(newUser.toMap());
+        // Create user document with default values if it doesn't exist
+        final newUser = AppUser(
+          uid: user.uid,
+          email: user.email,
+          displayName: user.displayName,
+          photoURL: user.photoURL,
+          phoneNumber: user.phoneNumber,
+          quizzesTaken: 0,
+          highestScore: 0.0,
+        );
+        
+        // Set the user document with default values
+        await _userDocRef.set({
+          'email': newUser.email,
+          'displayName': newUser.displayName,
+          'photoURL': newUser.photoURL,
+          'phoneNumber': newUser.phoneNumber,
+          'quizzesTaken': newUser.quizzesTaken,
+          'highestScore': newUser.highestScore,
+          'createdAt': FieldValue.serverTimestamp(),
+          'lastUpdated': FieldValue.serverTimestamp(),
+        }, SetOptions(merge: true));
+        
+        // Initialize the quiz_attempts subcollection with an empty document
+        // This ensures the subcollection exists even before first quiz attempt
+        await _userDocRef.collection('quiz_attempts').doc('_init').set({
+          '_initialized': true,
+          'createdAt': FieldValue.serverTimestamp(),
+        });
+        
         return newUser;
       }
 
       return AppUser.fromFirebaseUser(user, doc.data()!);
     } catch (e) {
+      developer.log('Error in getCurrentUser: $e', name: 'UserRepository');
       throw Exception('Failed to get user data: $e');
     }
   }
@@ -155,31 +183,67 @@ class UserRepository {
   /// Search for users by name or email
   /// Returns a list of users matching the query (excluding the current user)
   Future<List<AppUser>> searchUsers(String query) async {
-    if (query.isEmpty) {
-      return [];
-    }
+    if (query.isEmpty) return [];
 
     try {
-      // Convert query to lowercase for case-insensitive search
-      final searchQuery = query.toLowerCase();
+      final searchQuery = query.toLowerCase().trim();
+      final currentUserId = _auth.currentUser?.uid;
+      final Set<Map<String, dynamic>> uniqueUsers = {};
       
-      // Search in displayName and email fields
-      final snapshot = await _firestore
+      // 1. Search in email field
+      final emailSnapshot = await _firestore
           .collection('users')
-          .where('searchTerms', arrayContains: searchQuery)
+          .where('email', isGreaterThanOrEqualTo: searchQuery)
+          .where('email', isLessThanOrEqualTo: searchQuery + '\uf8ff')
           .limit(10)
           .get();
-
-      // Convert documents to AppUser objects
-      return snapshot.docs.map((doc) {
-        return AppUser.fromFirebaseUser(
-          _auth.currentUser!,
-          doc.data(),
-        );
-      }).toList();
+          
+      for (var doc in emailSnapshot.docs) {
+        if (doc.id != currentUserId) {
+          uniqueUsers.add({'id': doc.id, ...doc.data()});
+        }
+      }
+      
+      // 2. Search in displayName field
+      final nameSnapshot = await _firestore
+          .collection('users')
+          .where('displayName', isGreaterThanOrEqualTo: searchQuery)
+          .where('displayName', isLessThanOrEqualTo: searchQuery + '\uf8ff')
+          .limit(10)
+          .get();
+          
+      for (var doc in nameSnapshot.docs) {
+        if (doc.id != currentUserId) {
+          uniqueUsers.add({'id': doc.id, ...doc.data()});
+        }
+      }
+      
+      // 3. Try searchTerms if still no results
+      if (uniqueUsers.isEmpty) {
+        final searchTermsSnapshot = await _firestore
+            .collection('users')
+            .where('searchTerms', arrayContains: searchQuery)
+            .limit(10)
+            .get();
+            
+        for (var doc in searchTermsSnapshot.docs) {
+          if (doc.id != currentUserId) {
+            uniqueUsers.add({'id': doc.id, ...doc.data()});
+          }
+        }
+      }
+      
+      // Convert to AppUser objects and limit to 10 results
+      return uniqueUsers
+          .take(10)
+          .map((data) => AppUser.fromFirebaseUser(
+                _auth.currentUser!,
+                Map<String, dynamic>.from(data),
+              ))
+          .toList();
     } catch (e) {
       developer.log('Error searching users: $e', name: 'UserRepository');
-      rethrow;
+      return [];
     }
   }
 }

@@ -60,16 +60,15 @@ class _QuizResultScreenState extends State<QuizResultScreen> {
         }
       }
 
-      // Save quiz attempt to Firestore
-      debugPrint('🔄 Saving quiz attempt to Firestore...');
+      // Save quiz attempt to user's quiz_attempts subcollection
+      debugPrint('🔄 Saving quiz attempt to user\'s quiz_attempts subcollection...');
       debugPrint('📝 Course ID: ${widget.course.id}, Quiz ID: ${widget.quiz.id}, Score: ${widget.score}');
       
       final attemptData = {
-        'userId': userId,
         'courseId': widget.course.id,
         'courseName': widget.course.name,
         'quizId': widget.quiz.id,
-        'quizName': widget.quiz.title,
+        'quizTitle': widget.quiz.title,  // Changed from quizName to quizTitle to match query
         'score': widget.score,
         'totalQuestions': widget.totalQuestions,
         'percentage': percentage,
@@ -79,8 +78,9 @@ class _QuizResultScreenState extends State<QuizResultScreen> {
       debugPrint('Attempt data: $attemptData');
       
       try {
-        final docRef = await FirebaseFirestore.instance.collection('quiz_attempts').add(attemptData);
-        debugPrint('✅ Quiz attempt saved with ID: ${docRef.id}');
+        final userDocRef = FirebaseFirestore.instance.collection('users').doc(userId);
+        final docRef = await userDocRef.collection('quiz_attempts').add(attemptData);
+        debugPrint('✅ Quiz attempt saved to user\'s subcollection with ID: ${docRef.id}');
         debugPrint('📄 Document data: $attemptData');
         
         // Verify the document was saved
@@ -91,7 +91,7 @@ class _QuizResultScreenState extends State<QuizResultScreen> {
           debugPrint('❌ Failed to retrieve saved attempt');
         }
       } catch (error) {
-        debugPrint('❌ Error saving quiz attempt: $error');
+        debugPrint('❌ Error saving quiz attempt to user subcollection: $error');
         rethrow; // Re-throw to be caught by the outer catch block
       }
 
@@ -119,9 +119,7 @@ class _QuizResultScreenState extends State<QuizResultScreen> {
       child: Scaffold(
         appBar: AppBar(
           title: const Text('Quiz Results'),
-          backgroundColor: Colors.white,
           elevation: 0,
-          iconTheme: const IconThemeData(color: Colors.black),
           leading: IconButton(
             icon: const Icon(Icons.arrow_back),
             onPressed: () {
@@ -250,13 +248,19 @@ class _QuizResultScreenState extends State<QuizResultScreen> {
               },
               style: ElevatedButton.styleFrom(
                 backgroundColor: const Color(0xFFE53935),
+                foregroundColor: Colors.white, // Ensure text is white
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(12),
                 ),
+                elevation: 2, // Add slight elevation for better visibility
               ),
               child: const Text(
                 'Back to Quizzes',
-                style: TextStyle(fontSize: 16),
+                style: TextStyle(
+                  fontSize: 16,
+                  color: Colors.white, // Explicitly set text color to white
+                  fontWeight: FontWeight.w600, // Slightly bolder text
+                ),
               ),
             ),
           ),
@@ -302,28 +306,40 @@ class _QuizResultScreenState extends State<QuizResultScreen> {
               children: [
                 Text(
                   'Question ${index + 1}: ${question.question}',
-                  style: const TextStyle(
+                  style: TextStyle(
                     fontWeight: FontWeight.bold,
                     fontSize: 16,
+                    color: Theme.of(context).textTheme.titleMedium?.color,
                   ),
                 ),
                 const SizedBox(height: 8),
-                const Text(
+                Text(
                   'Correct Answer:',
                   style: TextStyle(
                     color: Colors.green,
                     fontWeight: FontWeight.bold,
                   ),
                 ),
-                Text(question.options[question.correctIndex]),
+                Text(
+                  question.options[question.correctIndex],
+                  style: TextStyle(
+                    color: Theme.of(context).textTheme.bodyLarge?.color,
+                  ),
+                ),
                 const SizedBox(height: 8),
-                const Text(
+                Text(
                   'Explanation:',
                   style: TextStyle(
                     fontWeight: FontWeight.bold,
+                    color: Theme.of(context).textTheme.titleMedium?.color,
                   ),
                 ),
-                Text(question.explanation),
+                Text(
+                  question.explanation,
+                  style: TextStyle(
+                    color: Theme.of(context).textTheme.bodyLarge?.color,
+                  ),
+                ),
               ],
             ),
           ),

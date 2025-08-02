@@ -3,6 +3,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart' as auth;
 import '../../models/course_model.dart';
 import 'package:intl/intl.dart';
+import 'package:flutter_slidable/flutter_slidable.dart';
 
 class QuizHistoryScreen extends StatefulWidget {
   const QuizHistoryScreen({super.key});
@@ -50,6 +51,54 @@ class _QuizHistoryScreenState extends State<QuizHistoryScreen> {
     if (percentage >= 80) return Colors.green;
     if (percentage >= 50) return Colors.orange;
     return Colors.red;
+  }
+
+  Future<void> _deleteQuizAttempt(String attemptId) async {
+    final userId = auth.FirebaseAuth.instance.currentUser?.uid;
+    if (userId == null) return;
+
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Delete Quiz Attempt'),
+        content: const Text('Are you sure you want to delete this quiz attempt? This action cannot be undone.'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(false),
+            child: const Text('CANCEL'),
+          ),
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(true),
+            style: TextButton.styleFrom(foregroundColor: Colors.red),
+            child: const Text('DELETE'),
+          ),
+        ],
+      ),
+    ) ?? false;
+
+    if (confirmed && context.mounted) {
+      try {
+        await FirebaseFirestore.instance
+            .collection('users')
+            .doc(userId)
+            .collection('quiz_attempts')
+            .doc(attemptId)
+            .delete();
+        
+        if (context.mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('Quiz attempt deleted')),
+          );
+        }
+      } catch (e) {
+        if (context.mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('Failed to delete quiz attempt')),
+          );
+        }
+        debugPrint('Error deleting quiz attempt: $e');
+      }
+    }
   }
 
   @override
@@ -105,9 +154,54 @@ class _QuizHistoryScreenState extends State<QuizHistoryScreen> {
             return const Center(child: Text('No data received from server'));
           }
           
-          if (snapshot.data!.docs.isEmpty) {
+          if (snapshot.data!.docs.isEmpty || 
+              (snapshot.data!.docs.length == 1 && 
+               snapshot.data!.docs.first.id == '_init')) {
             debugPrint('No quiz attempts found for user: $userId');
-            return const Center(child: Text('No quiz attempts found'));
+            return Center(
+              child: Padding(
+                padding: const EdgeInsets.all(24.0),
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Icon(
+                      Icons.quiz_outlined,
+                      size: 64,
+                      color: Theme.of(context).colorScheme.primary.withOpacity(0.5),
+                    ),
+                    const SizedBox(height: 16),
+                    const Text(
+                      'No Quiz History Yet',
+                      style: TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+                    const Text(
+                      'Complete a quiz to see your attempt history here.',
+                      textAlign: TextAlign.center,
+                      style: TextStyle(
+                        color: Colors.grey,
+                        fontSize: 14,
+                      ),
+                    ),
+                    const SizedBox(height: 24),
+                    ElevatedButton.icon(
+                      onPressed: () {
+                        // Navigate to quiz selection
+                        Navigator.of(context).pushNamedAndRemoveUntil(
+                          '/home', 
+                          (route) => false,
+                        );
+                      },
+                      icon: const Icon(Icons.quiz),
+                      label: const Text('Take a Quiz'),
+                    ),
+                  ],
+                ),
+              ),
+            );
           }
 
           final attempts = snapshot.data!.docs;
@@ -127,9 +221,23 @@ class _QuizHistoryScreenState extends State<QuizHistoryScreen> {
               final percentage = (attempt['percentage'] as num?)?.toDouble() ?? 0.0;
               final timestamp = (attempt['timestamp'] as Timestamp?)?.toDate() ?? DateTime.now();
 
-              return Card(
-                margin: const EdgeInsets.only(bottom: 12),
-                child: ListTile(
+              return Slidable(
+                key: Key(doc.id),
+                endActionPane: ActionPane(
+                  motion: const ScrollMotion(),
+                  children: [
+                    SlidableAction(
+                      onPressed: (_) => _deleteQuizAttempt(doc.id),
+                      backgroundColor: Colors.red,
+                      foregroundColor: Colors.white,
+                      icon: Icons.delete,
+                      label: 'Delete',
+                    ),
+                  ],
+                ),
+                child: Card(
+                  margin: const EdgeInsets.only(bottom: 12),
+                  child: ListTile(
                   title: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
@@ -176,15 +284,14 @@ class _QuizHistoryScreenState extends State<QuizHistoryScreen> {
                   ),
                   onTap: () {
                     // TODO: Navigate to detailed quiz results if needed
-                  }
+                  },
                 ),
-              );
+              ),
+            );
             },
           );
         },
       ),
     );
   }
-
-
 }

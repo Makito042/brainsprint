@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 import '../../providers/gamification_provider.dart';
 import '../../models/user_model.dart';
 import '../../models/gamification/challenge_model.dart';
+import '../gamification/challenges_screen.dart';
 
 class SelectChallengeUserScreen extends StatefulWidget {
   final Map<String, dynamic> challengeData;
@@ -56,19 +57,107 @@ class _SelectChallengeUserScreenState extends State<SelectChallengeUserScreen> {
     }
   }
 
-  void _selectUser(AppUser user) {
+  Future<void> _selectUser(AppUser user) async {
+    // Get current user ID from GamificationProvider
+    final gamification = context.read<GamificationProvider>();
+    final currentUserId = gamification.currentUserId;
+    
+    if (currentUserId == null) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('You must be logged in to create a challenge')),
+        );
+      }
+      return;
+    }
+    
+    // Show confirmation dialog
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Create Challenge'),
+        content: Text('Challenge ${user.displayName ?? 'this user'} to this ${widget.challengeData['type']} challenge?'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(false),
+            child: const Text('CANCEL'),
+          ),
+          ElevatedButton(
+            onPressed: () => Navigator.of(context).pop(true),
+            child: const Text('CREATE CHALLENGE'),
+          ),
+        ],
+      ),
+    ) ?? false;
+
+    if (!confirmed) return;
+
     // Update the challenge data with the selected user
     final updatedData = Map<String, dynamic>.from(widget.challengeData);
     updatedData['challengedUserId'] = user.uid;
     
+    // If this is a quiz challenge, ensure quizId is in metadata
+    if (updatedData['type'] == ChallengeType.quiz) {
+      updatedData['metadata'] ??= {};
+      updatedData['metadata']['quizId'] = updatedData['quizId'];
+      updatedData['metadata']['challengerId'] = currentUserId;
+    }
+    
     // Create the challenge
-    _createChallenge(updatedData);
+    await _createChallenge(updatedData);
+    
+    // Show success message and navigate to upcoming challenges
+    if (mounted) {
+      // Show success message
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Challenge sent to ${user.displayName ?? 'user'}!'),
+            behavior: SnackBarBehavior.floating,
+            duration: const Duration(seconds: 2),
+          ),
+        );
+      }
+      
+      // Navigate back to the root and then to challenges with upcoming tab
+      if (context.mounted) {
+        // First pop the user selection screen
+        Navigator.of(context).pop();
+        
+        // Find the root navigator if we're in a nested navigator
+        Navigator.of(context, rootNavigator: true).pushAndRemoveUntil<void>(
+          MaterialPageRoute(
+            builder: (context) => const ChallengesScreen(),
+            settings: const RouteSettings(
+              name: '/challenges',
+              arguments: {'initialTab': 1}, // 1 is the index for upcoming tab
+            ),
+          ),
+          (route) => false, // Remove all previous routes
+        );
+      }
+    }
   }
 
   Future<void> _createChallenge(Map<String, dynamic> challengeData) async {
     final gamification = context.read<GamificationProvider>();
+    final currentUserId = gamification.currentUserId;
+    
+    if (currentUserId == null) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('You must be logged in to create a challenge')),
+        );
+      }
+      return;
+    }
     
     try {
+      final participants = [
+        currentUserId,
+        challengeData['challengedUserId'] as String,
+      ];
+      
       final challengeId = await gamification.createChallenge(
         title: challengeData['title'] as String,
         description: challengeData['description'] as String,
@@ -77,6 +166,7 @@ class _SelectChallengeUserScreenState extends State<SelectChallengeUserScreen> {
         endDate: challengeData['endDate'] as DateTime,
         rewardPoints: 100,
         metadata: challengeData['metadata'] as Map<String, dynamic>?,
+        participants: participants,
       );
 
       if (mounted) {
@@ -88,7 +178,7 @@ class _SelectChallengeUserScreenState extends State<SelectChallengeUserScreen> {
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Failed to create challenge')),
+          SnackBar(content: Text('Failed to create challenge: $e')),
         );
       }
     }
@@ -148,7 +238,9 @@ class _SelectChallengeUserScreenState extends State<SelectChallengeUserScreen> {
                       ),
                       title: Text(user.displayName ?? 'No name'),
                       subtitle: Text(user.email ?? ''),
-                      onTap: () => _selectUser(user),
+                      onTap: () async {
+                        await _selectUser(user);
+                      },
                     );
                   },
                 ),

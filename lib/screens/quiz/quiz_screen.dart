@@ -66,11 +66,20 @@ class _QuizScreenState extends State<QuizScreen> {
           onPressed: () => Navigator.pop(context),
         ),
       ),
-      body: Container(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
+      body: LayoutBuilder(
+        builder: (context, constraints) {
+          return SingleChildScrollView(
+            child: ConstrainedBox(
+              constraints: BoxConstraints(
+                minHeight: constraints.maxHeight,
+              ),
+              child: IntrinsicHeight(
+                child: Padding(
+                  padding: const EdgeInsets.all(16.0),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
             Text(
               'Question ${_currentQuestionIndex + 1} of ${widget.quiz.questions.length}',
               style: const TextStyle(
@@ -117,35 +126,48 @@ class _QuizScreenState extends State<QuizScreen> {
             const SizedBox(height: 24),
             if (_showExplanation)
               Card(
-                color: Colors.grey[100],
+                color: Theme.of(context).cardColor,
+                elevation: 2,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
                 child: Padding(
                   padding: const EdgeInsets.all(16.0),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      const Text(
+                      Text(
                         'Explanation:',
                         style: TextStyle(
                           fontWeight: FontWeight.bold,
                           fontSize: 16,
+                          color: Theme.of(context).textTheme.titleMedium?.color,
                         ),
                       ),
                       const SizedBox(height: 8),
                       Text(
                         widget.quiz.questions[_currentQuestionIndex].explanation,
-                        style: const TextStyle(
+                        style: TextStyle(
                           fontSize: 14,
+                          color: Theme.of(context).textTheme.bodyLarge?.color,
+                          height: 1.4,
                         ),
                       ),
                       const SizedBox(height: 16),
-                      ElevatedButton(
-                        onPressed: _nextQuestionAfterExplanation,
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: Theme.of(context).colorScheme.primary,
-                          foregroundColor: Colors.white,
-                          padding: const EdgeInsets.symmetric(vertical: 12),
+                      SizedBox(
+                        width: double.infinity,
+                        child: ElevatedButton(
+                          onPressed: _nextQuestionAfterExplanation,
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: Theme.of(context).colorScheme.primary,
+                            foregroundColor: Colors.white,
+                            padding: const EdgeInsets.symmetric(vertical: 12),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(8),
+                            ),
+                          ),
+                          child: const Text('Next Question'),
                         ),
-                        child: const Text('Next Question'),
                       ),
                     ],
                   ),
@@ -161,8 +183,13 @@ class _QuizScreenState extends State<QuizScreen> {
                 ),
                 child: const Text('Next'),
               ),
-          ],
-        ),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+          );
+        },
       ),
     );
   }

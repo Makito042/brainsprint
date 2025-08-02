@@ -56,6 +56,10 @@ class _ChallengesScreenState extends State<ChallengesScreen> {
         appBar: AppBar(
           title: const Text('Challenges'),
           centerTitle: true,
+          leading: IconButton(
+            icon: const Icon(Icons.arrow_back),
+            onPressed: () => Navigator.of(context).pop(),
+          ),
           bottom: TabBar(
             tabs: const [
               Tab(text: 'Active'),
